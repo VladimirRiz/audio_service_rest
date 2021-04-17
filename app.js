@@ -23,16 +23,16 @@ const fileStorage = multer.diskStorage({
   },
 });
 
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'audio/mp3') {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
+// const fileFilter = (req, file, cb) => {
+//   if (file.mimetype === 'audio/mp3') {
+//     cb(null, true);
+//   } else {
+//     cb(null, false);
+//   }
+// };
 
 app.use(express.json()); // application/json
-app.use(multer({ storage: fileStorage, fileFilter }).single('audio'));
+app.use(multer({ storage: fileStorage }).single('audio'));
 app.use('/audio', express.static(path.join(__dirname, 'audio')));
 
 app.use((req, res, next) => {
@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/feed', feedRouts);
-app.use('/auth', authRouts);
+// app.use('/auth', authRouts);
 
 app.use((error, req, res, next) => {
   console.log(error);

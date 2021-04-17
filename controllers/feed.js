@@ -31,6 +31,7 @@ exports.getPost = async (req, res, next) => {
 };
 
 exports.getPosts = async (req, res, next) => {
+  console.log('work');
   const currentPage = req.query.page || 1;
   const perPage = 2;
   try {
@@ -58,34 +59,37 @@ exports.createPost = async (req, res, next) => {
     throw error;
   }
   if (!req.file) {
+    console.log(req.file);
     const error = new Error('No image');
     error.statusCode = 422;
     throw error;
   }
-  const { title, content } = req.body;
-  const image = req.file.path;
+  console.log(req.body);
+  const { title, description } = req.body;
+  const audio = req.file.path;
   const post = new Post({
     title,
-    content,
-    image,
-    creator: req.userId,
+    description,
+    audio,
+    // creator: req.userId,
   });
-  try {
-    await post.save();
-    const user = await User.findById(req.userId);
-    user.posts.push(post);
-    await user.save();
-    res.status(201).json({
-      message: 'Success!',
-      post: post,
-      creator: { _id: user._id, name: user.name },
-    });
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
-  }
+  post.save();
+  // try {
+  //   await post.save();
+  //   const user = await User.findById(req.userId);
+  //   user.posts.push(post);
+  //   await user.save();
+  //   res.status(201).json({
+  //     message: 'Success!',
+  //     post: post,
+  //     creator: { _id: user._id, name: user.name },
+  //   });
+  // } catch (err) {
+  //   if (!err.statusCode) {
+  //     err.statusCode = 500;
+  //   }
+  //   next(err);
+  // }
 };
 
 exports.updatePost = async (req, res, next) => {
