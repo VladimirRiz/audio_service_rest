@@ -10,7 +10,14 @@ const feedController = require('../controllers/feed');
 //GET feed/posts
 router.get('/posts', feedController.getPosts);
 
-router.post('/post', feedController.createPost);
+router.post(
+  '/post',
+  [
+    body('title').isString().isLength({ min: 5 }).trim(),
+    body('description').isString().isLength({ min: 5 }).trim(),
+  ],
+  feedController.createPost
+);
 
 router.get('/post/:postId', feedController.getPost);
 
@@ -18,7 +25,7 @@ router.put(
   '/post/:postId',
   [
     body('title').isString().isLength({ min: 5 }).trim(),
-    body('content').isString().isLength({ min: 5 }).trim(),
+    body('description').isString().isLength({ min: 5 }).trim(),
   ],
 
   feedController.updatePost

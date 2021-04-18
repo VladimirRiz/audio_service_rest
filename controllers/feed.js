@@ -7,8 +7,8 @@ const Post = require('../models/post');
 const User = require('../models/user');
 
 const clearAudio = (filePath) => {
-  const imagePath = path.join(__dirname, '..', filePath);
-  fs.unlink(imagePath, (err) => console.log(err));
+  const audioPath = path.join(__dirname, '..', filePath);
+  fs.unlink(audioPath, (err) => console.log(err));
 };
 
 exports.getPost = async (req, res, next) => {
@@ -100,12 +100,12 @@ exports.updatePost = async (req, res, next) => {
     throw error;
   }
   const { title, content } = req.body;
-  let image = req.body.image;
+  let audio = req.body.audio;
   if (req.file) {
-    image = req.file.path;
+    audio = req.file.path;
   }
-  if (!image) {
-    const error = new Error('No image');
+  if (!audio) {
+    const error = new Error('No audio');
     error.statusCode = 422;
     throw error;
   }
@@ -116,17 +116,17 @@ exports.updatePost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    if (post.creator.toString() !== req.userId) {
-      const error = new Error('Not Authorized');
-      error.statusCode = 403;
-      throw error;
-    }
-    if (image !== post.image) {
-      clearAudio(post.image, image);
+    // if (post.creator.toString() !== req.userId) {
+    //   const error = new Error('Not Authorized');
+    //   error.statusCode = 403;
+    //   throw error;
+    // }
+    if (audio !== post.audio) {
+      clearAudio(post.audio, audio);
     }
     post.title = title;
     post.content = content;
-    post.image = image;
+    post.audio = audio;
     await post.save();
 
     res.status(200).json({ message: 'Success', post });
@@ -147,17 +147,17 @@ exports.deletePost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    if (post.creator.toString() !== req.userId) {
-      const error = new Error('Not Authorized');
-      error.statusCode = 403;
-      throw error;
-    }
-    clearAudio(post.image);
+    // if (post.creator.toString() !== req.userId) {
+    //   const error = new Error('Not Authorized');
+    //   error.statusCode = 403;
+    //   throw error;
+    // }
+    clearAudio(post.audio);
     await Post.findByIdAndRemove(postId);
 
-    const user = await User.findById(req.userId);
-    user.posts.pull(postId);
-    await user.save();
+    // const user = await User.findById(req.userId);
+    // user.posts.pull(postId);
+    // await user.save();
     res.status(200).json({ message: 'Deleted!' });
   } catch (err) {
     if (!err.statusCode) {
