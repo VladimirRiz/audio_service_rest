@@ -6,7 +6,7 @@ const { validationResult } = require('express-validator');
 const Post = require('../models/post');
 const User = require('../models/user');
 
-const cleatImage = (filePath) => {
+const clearAudio = (filePath) => {
   const imagePath = path.join(__dirname, '..', filePath);
   fs.unlink(imagePath, (err) => console.log(err));
 };
@@ -33,11 +33,11 @@ exports.getPost = async (req, res, next) => {
 exports.getPosts = async (req, res, next) => {
   console.log('work');
   const currentPage = req.query.page || 1;
-  const perPage = 2;
+  const perPage = 10;
   try {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
-      .populate('creator')
+      // .populate('creator')
       .sort({ createdAt: -1 })
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
@@ -60,11 +60,11 @@ exports.createPost = async (req, res, next) => {
   }
   if (!req.file) {
     console.log(req.file);
-    const error = new Error('No image');
+    const error = new Error('No audio');
     error.statusCode = 422;
     throw error;
   }
-  console.log(req.body);
+  // console.log(req.body);
   const { title, description } = req.body;
   const audio = req.file.path;
   const post = new Post({
@@ -73,23 +73,22 @@ exports.createPost = async (req, res, next) => {
     audio,
     // creator: req.userId,
   });
-  post.save();
-  // try {
-  //   await post.save();
-  //   const user = await User.findById(req.userId);
-  //   user.posts.push(post);
-  //   await user.save();
-  //   res.status(201).json({
-  //     message: 'Success!',
-  //     post: post,
-  //     creator: { _id: user._id, name: user.name },
-  //   });
-  // } catch (err) {
-  //   if (!err.statusCode) {
-  //     err.statusCode = 500;
-  //   }
-  //   next(err);
-  // }
+  try {
+    await post.save();
+    // const user = await User.findById(req.userId);
+    // user.posts.push(post);
+    // await user.save();
+    res.status(201).json({
+      message: 'Success!',
+      post: post,
+      // creator: { _id: user._id, name: user.name },
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
 
 exports.updatePost = async (req, res, next) => {
@@ -123,7 +122,7 @@ exports.updatePost = async (req, res, next) => {
       throw error;
     }
     if (image !== post.image) {
-      cleatImage(post.image, image);
+      clearAudio(post.image, image);
     }
     post.title = title;
     post.content = content;
@@ -153,7 +152,7 @@ exports.deletePost = async (req, res, next) => {
       error.statusCode = 403;
       throw error;
     }
-    cleatImage(post.image);
+    clearAudio(post.image);
     await Post.findByIdAndRemove(postId);
 
     const user = await User.findById(req.userId);
