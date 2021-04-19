@@ -10,6 +10,8 @@ const feedController = require('../controllers/feed');
 //GET feed/posts
 router.get('/posts', feedController.getPosts);
 
+router.get('/posts/:category', feedController.getCategory);
+
 router.post(
   '/post',
   [

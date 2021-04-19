@@ -37,11 +37,26 @@ exports.getPosts = async (req, res, next) => {
   try {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
-      // .populate('creator')
+      // .populate('category')
       .sort({ createdAt: -1 })
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
+    res.status(200).json({ message: 'Success', posts, totalItems });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.getCategory = async (req, res, next) => {
+  const reqCategory = req.params.category;
+  try {
+    const totalItems = await Post.find().countDocuments();
+    const posts = await Post.find().where({ category: reqCategory });
+    console.log(posts);
     res.status(200).json({ message: 'Success', posts, totalItems });
   } catch (err) {
     if (!err.statusCode) {
@@ -65,12 +80,13 @@ exports.createPost = async (req, res, next) => {
     throw error;
   }
   // console.log(req.body);
-  const { title, description } = req.body;
+  const { title, description, category } = req.body;
   const audio = req.file.path;
   const post = new Post({
     title,
     description,
     audio,
+    category,
     // creator: req.userId,
   });
   try {
@@ -93,13 +109,14 @@ exports.createPost = async (req, res, next) => {
 
 exports.updatePost = async (req, res, next) => {
   const { postId } = req.params;
+  console.log('here');
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed');
     error.statusCode = 422;
     throw error;
   }
-  const { title, content } = req.body;
+  const { title, description, category } = req.body;
   let audio = req.body.audio;
   if (req.file) {
     audio = req.file.path;
@@ -125,8 +142,9 @@ exports.updatePost = async (req, res, next) => {
       clearAudio(post.audio, audio);
     }
     post.title = title;
-    post.content = content;
+    post.description = description;
     post.audio = audio;
+    post.category = category;
     await post.save();
 
     res.status(200).json({ message: 'Success', post });
