@@ -35,4 +35,6 @@ router.put(
 
 router.delete('/post/:postId', feedController.deletePost);
 
+router.put('/post/likes/:postId', feedController.updatePostLikes);
+
 module.exports = router;

@@ -31,7 +31,6 @@ exports.getPost = async (req, res, next) => {
 };
 
 exports.getPosts = async (req, res, next) => {
-  console.log('work');
   const currentPage = req.query.page || 1;
   const perPage = 10;
   try {
@@ -80,13 +79,14 @@ exports.createPost = async (req, res, next) => {
     throw error;
   }
   // console.log(req.body);
-  const { title, description, category } = req.body;
+  const { title, description, category, likes } = req.body;
   const audio = req.file.path;
   const post = new Post({
     title,
     description,
     audio,
     category,
+    likes,
     // creator: req.userId,
   });
   try {
@@ -109,14 +109,13 @@ exports.createPost = async (req, res, next) => {
 
 exports.updatePost = async (req, res, next) => {
   const { postId } = req.params;
-  console.log('here');
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed');
     error.statusCode = 422;
     throw error;
   }
-  const { title, description, category } = req.body;
+  const { title, description, category, likes } = req.body;
   let audio = req.body.audio;
   if (req.file) {
     audio = req.file.path;
@@ -145,6 +144,39 @@ exports.updatePost = async (req, res, next) => {
     post.description = description;
     post.audio = audio;
     post.category = category;
+    post.likes = likes;
+    await post.save();
+
+    res.status(200).json({ message: 'Success', post });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.updatePostLikes = async (req, res, next) => {
+  const { postId } = req.params;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new Error('Post not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    // if (post.creator.toString() !== req.userId) {
+    //   const error = new Error('Not Authorized');
+    //   error.statusCode = 403;
+    //   throw error;
+    // }
+    post.likes = post.likes + 1;
     await post.save();
 
     res.status(200).json({ message: 'Success', post });

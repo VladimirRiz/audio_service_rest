@@ -20,6 +20,9 @@ const postSchema = new Schema(
       type: String,
       required: true,
     },
+    likes: {
+      type: Number,
+    },
     // creator: {
     //   type: Schema.Types.ObjectId,
     //   ref: 'User',
