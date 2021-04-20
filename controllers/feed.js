@@ -37,10 +37,10 @@ exports.getPosts = async (req, res, next) => {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
       // .populate('category')
-      .sort({ createdAt: -1 })
-      .skip((currentPage - 1) * perPage)
-      .limit(perPage);
-
+      .sort({ createdAt: -1 });
+    // .skip((currentPage - 1) * perPage)
+    // .limit(perPage);
+    console.log(posts);
     res.status(200).json({ message: 'Success', posts, totalItems });
   } catch (err) {
     if (!err.statusCode) {
@@ -55,6 +55,26 @@ exports.getCategory = async (req, res, next) => {
   try {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find().where({ category: reqCategory });
+    console.log(posts);
+    res.status(200).json({ message: 'Success', posts, totalItems });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.getPopular = async (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 10;
+  try {
+    const totalItems = await Post.find().countDocuments();
+    const posts = await Post.find()
+      // .populate('category')
+      .sort({ likes: -1 });
+    // .skip((currentPage - 1) * perPage)
+    // .limit(perPage);
     console.log(posts);
     res.status(200).json({ message: 'Success', posts, totalItems });
   } catch (err) {

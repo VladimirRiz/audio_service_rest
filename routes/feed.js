@@ -11,6 +11,7 @@ const feedController = require('../controllers/feed');
 router.get('/posts', feedController.getPosts);
 
 router.get('/posts/:category', feedController.getCategory);
+router.get('/likes', feedController.getPopular);
 
 router.post(
   '/post',
