@@ -5,10 +5,10 @@ const { body } = require('express-validator');
 const router = express.Router();
 
 const feedController = require('../controllers/feed');
-// const isAuth = require('../middleware/is-auth');
+const isAuth = require('../middleware/is-auth');
 
 //GET feed/posts
-router.get('/posts', feedController.getPosts);
+router.get('/posts', isAuth, feedController.getPosts);
 
 router.get('/posts/:category', feedController.getCategory);
 router.get('/likes', feedController.getPopular);

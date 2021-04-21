@@ -49,6 +49,7 @@ exports.login = async (req, res, next) => {
       error.status = 401;
       throw error;
     }
+    console.log(user);
     const token = jwt.sign(
       {
         email: loadedUser.email,

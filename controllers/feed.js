@@ -20,7 +20,6 @@ exports.getPost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    console.log(post);
     res.status(200).json({ message: 'success', post: post });
   } catch (err) {
     if (!err.statusCode) {
