@@ -106,17 +106,17 @@ exports.createPost = async (req, res, next) => {
     audio,
     category,
     likes,
-    // creator: req.userId,
+    creator: req.userId,
   });
   try {
     await post.save();
-    // const user = await User.findById(req.userId);
-    // user.posts.push(post);
-    // await user.save();
+    const user = await User.findById(req.userId);
+    user.posts.push(post);
+    await user.save();
     res.status(201).json({
       message: 'Success!',
       post: post,
-      // creator: { _id: user._id, name: user.name },
+      creator: { _id: user._id, name: user.name },
     });
   } catch (err) {
     if (!err.statusCode) {
@@ -151,11 +151,11 @@ exports.updatePost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    // if (post.creator.toString() !== req.userId) {
-    //   const error = new Error('Not Authorized');
-    //   error.statusCode = 403;
-    //   throw error;
-    // }
+    if (post.creator.toString() !== req.userId) {
+      const error = new Error('Not Authorized');
+      error.statusCode = 403;
+      throw error;
+    }
     if (audio !== post.audio) {
       clearAudio(post.audio, audio);
     }
@@ -190,11 +190,6 @@ exports.updatePostLikes = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    // if (post.creator.toString() !== req.userId) {
-    //   const error = new Error('Not Authorized');
-    //   error.statusCode = 403;
-    //   throw error;
-    // }
     post.likes = post.likes + 1;
     await post.save();
 
@@ -216,17 +211,16 @@ exports.deletePost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    // if (post.creator.toString() !== req.userId) {
-    //   const error = new Error('Not Authorized');
-    //   error.statusCode = 403;
-    //   throw error;
-    // }
+    if (post.creator.toString() !== req.userId) {
+      const error = new Error('Not Authorized');
+      error.statusCode = 403;
+      throw error;
+    }
     clearAudio(post.audio);
     await Post.findByIdAndRemove(postId);
-
-    // const user = await User.findById(req.userId);
-    // user.posts.pull(postId);
-    // await user.save();
+    const user = await User.findById(req.userId);
+    user.posts.pull(postId);
+    await user.save();
     res.status(200).json({ message: 'Deleted!' });
   } catch (err) {
     if (!err.statusCode) {
