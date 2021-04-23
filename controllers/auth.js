@@ -61,7 +61,12 @@ exports.login = async (req, res, next) => {
     console.log(loadedUser, token);
     res
       .status(200)
-      .json({ token, userId: loadedUser._id.toString(), expiresIn: 3600 });
+      .json({
+        token,
+        userId: loadedUser._id.toString(),
+        expiresIn: 3600,
+        status: loadedUser.status,
+      });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
