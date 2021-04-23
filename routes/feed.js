@@ -12,6 +12,7 @@ router.get('/posts', feedController.getPosts);
 
 router.get('/posts/:category', feedController.getCategory);
 router.get('/likes', feedController.getPopular);
+router.get('/plays', feedController.getPlays);
 
 router.post(
   '/post',
@@ -37,7 +38,7 @@ router.put(
 
 router.delete('/post/:postId', isAuth, feedController.deletePost);
 
-router.put('/post/likes/:postId', feedController.updatePostLikes);
+router.put('/post/likes/:postId', isAuth, feedController.updatePostLikes);
 router.put('/post/plays/:postId', feedController.updatePostPlays);
 
 module.exports = router;

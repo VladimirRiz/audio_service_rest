@@ -84,6 +84,19 @@ exports.getPopular = async (req, res, next) => {
   }
 };
 
+exports.getPlays = async (req, res, next) => {
+  try {
+    const totalItems = await Post.find().countDocuments();
+    const posts = await Post.find().sort({ plays: -1 });
+    res.status(200).json({ message: 'Success', posts, totalItems });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.createPost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
