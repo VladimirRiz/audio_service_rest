@@ -11,13 +11,14 @@ const isAuth = require('../middleware/is-auth');
 router.get('/posts', feedController.getPosts);
 
 router.get('/posts/:category', feedController.getCategory);
-router.get('/likes', isAuth, feedController.getPopular);
+router.get('/likes', feedController.getPopular);
 
 router.post(
   '/post',
   [
     body('title').isString().isLength({ min: 5 }).trim(),
     body('description').isString().isLength({ min: 5 }).trim(),
+    isAuth,
   ],
   feedController.createPost
 );
@@ -34,8 +35,9 @@ router.put(
   feedController.updatePost
 );
 
-router.delete('/post/:postId', feedController.deletePost);
+router.delete('/post/:postId', isAuth, feedController.deletePost);
 
 router.put('/post/likes/:postId', feedController.updatePostLikes);
+router.put('/post/plays/:postId', feedController.updatePostPlays);
 
 module.exports = router;

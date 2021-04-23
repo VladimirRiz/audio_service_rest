@@ -97,8 +97,8 @@ exports.createPost = async (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
-  // console.log(req.body);
-  const { title, description, category, likes } = req.body;
+  console.log(req.userId);
+  const { title, description, category, likes, plays } = req.body;
   const audio = req.file.path;
   const post = new Post({
     title,
@@ -106,6 +106,7 @@ exports.createPost = async (req, res, next) => {
     audio,
     category,
     likes,
+    plays,
     creator: req.userId,
   });
   try {
@@ -134,7 +135,7 @@ exports.updatePost = async (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
-  const { title, description, category, likes } = req.body;
+  const { title, description, category, likes, plays } = req.body;
   let audio = req.body.audio;
   if (req.file) {
     audio = req.file.path;
@@ -164,6 +165,7 @@ exports.updatePost = async (req, res, next) => {
     post.audio = audio;
     post.category = category;
     post.likes = likes;
+    post.plays = plays;
     await post.save();
 
     res.status(200).json({ message: 'Success', post });
@@ -202,6 +204,33 @@ exports.updatePostLikes = async (req, res, next) => {
   }
 };
 
+exports.updatePostPlays = async (req, res, next) => {
+  const { postId } = req.params;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new Error('Post not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    post.plays = post.plays + 1;
+    await post.save();
+
+    res.status(200).json({ message: 'Success', post });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.deletePost = async (req, res, next) => {
   const { postId } = req.params;
   try {
@@ -211,6 +240,7 @@ exports.deletePost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
+    console.log(req.userId);
     if (post.creator.toString() !== req.userId) {
       const error = new Error('Not Authorized');
       error.statusCode = 403;

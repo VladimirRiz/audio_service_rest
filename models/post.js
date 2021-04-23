@@ -23,6 +23,9 @@ const postSchema = new Schema(
     likes: {
       type: Number,
     },
+    plays: {
+      type: Number,
+    },
     creator: {
       type: Schema.Types.ObjectId,
       ref: 'User',
