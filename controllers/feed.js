@@ -97,6 +97,24 @@ exports.getPlays = async (req, res, next) => {
   }
 };
 
+exports.getFavorite = async (req, res, next) => {
+  const { userId } = req.params;
+  const currentPage = req.query.page || 1;
+  const perPage = 10;
+  try {
+    const user = await User.findById(userId);
+    const posts = await Post.find({
+      _id: { $in: user.library },
+    });
+    res.status(200).json({ message: 'Success', posts });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.createPost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -205,10 +223,19 @@ exports.updatePostLikes = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    post.likes = post.likes + 1;
-    await post.save();
 
-    res.status(200).json({ message: 'Success', post });
+    const user = await User.findById(req.userId);
+    const isExist = await user.library.find((post) => {
+      return post._id.toString() === postId.toString();
+    });
+    if (user.library.length === 0 || !isExist) {
+      user.library.push(post);
+      post.likes = post.likes + 1;
+      post.likedBy.push(user);
+      await post.save();
+      await user.save();
+    }
+    res.status(200).json({ message: 'Success', post, library: user.library });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

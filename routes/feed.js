@@ -13,6 +13,7 @@ router.get('/posts', feedController.getPosts);
 router.get('/posts/:category', feedController.getCategory);
 router.get('/likes', feedController.getPopular);
 router.get('/plays', feedController.getPlays);
+router.get('/favorite/:userId', feedController.getFavorite);
 
 router.post(
   '/post',
