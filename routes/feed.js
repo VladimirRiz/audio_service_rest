@@ -33,8 +33,15 @@ router.put(
     body('title').isString().isLength({ min: 5 }).trim(),
     body('description').isString().isLength({ min: 5 }).trim(),
   ],
-
+  isAuth,
   feedController.updatePost
+);
+
+router.put(
+  '/post/comment/:postId',
+  [body('comment').isString().isLength({ min: 5 }).trim()],
+  isAuth,
+  feedController.setComment
 );
 
 router.delete('/post/:postId', isAuth, feedController.deletePost);

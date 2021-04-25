@@ -37,6 +37,7 @@ const postSchema = new Schema(
         ref: 'User',
       },
     ],
+    comments: [{ type: Object }],
   },
   { timestamps: true }
 );

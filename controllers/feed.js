@@ -34,12 +34,7 @@ exports.getPosts = async (req, res, next) => {
   const perPage = 10;
   try {
     const totalItems = await Post.find().countDocuments();
-    const posts = await Post.find()
-      // .populate('category')
-      .sort({ createdAt: -1 });
-    // .skip((currentPage - 1) * perPage)
-    // .limit(perPage);
-    console.log(posts);
+    const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json({ message: 'Success', posts, totalItems });
   } catch (err) {
     if (!err.statusCode) {
@@ -69,12 +64,7 @@ exports.getPopular = async (req, res, next) => {
   const perPage = 10;
   try {
     const totalItems = await Post.find().countDocuments();
-    const posts = await Post.find()
-      // .populate('category')
-      .sort({ likes: -1 });
-    // .skip((currentPage - 1) * perPage)
-    // .limit(perPage);
-    console.log(posts);
+    const posts = await Post.find().sort({ likes: -1 });
     res.status(200).json({ message: 'Success', posts, totalItems });
   } catch (err) {
     if (!err.statusCode) {
@@ -99,8 +89,6 @@ exports.getPlays = async (req, res, next) => {
 
 exports.getFavorite = async (req, res, next) => {
   const { userId } = req.params;
-  const currentPage = req.query.page || 1;
-  const perPage = 10;
   try {
     const user = await User.findById(userId);
     const posts = await Post.find({
@@ -197,6 +185,36 @@ exports.updatePost = async (req, res, next) => {
     post.category = category;
     post.likes = likes;
     post.plays = plays;
+    await post.save();
+
+    res.status(200).json({ message: 'Success', post });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.setComment = async (req, res, next) => {
+  const { postId } = req.params;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  const { comment } = req.body;
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new Error('Post not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    const user = await User.findById(req.userId);
+    post.comments.push({ text: comment, name: user.name });
+    console.log(post);
     await post.save();
 
     res.status(200).json({ message: 'Success', post });
