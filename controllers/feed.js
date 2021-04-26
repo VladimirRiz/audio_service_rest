@@ -103,6 +103,20 @@ exports.getFavorite = async (req, res, next) => {
   }
 };
 
+exports.getPlaylists = async (req, res, next) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    console.log(user);
+    res.status(200).json({ message: 'Success', playlists: user.playlists });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.createPost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -214,10 +228,57 @@ exports.setComment = async (req, res, next) => {
     }
     const user = await User.findById(req.userId);
     post.comments.push({ text: comment, name: user.name });
-    console.log(post);
     await post.save();
 
     res.status(200).json({ message: 'Success', post });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.createPlaylist = async (req, res, next) => {
+  const { postId } = req.params;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  let name = req.body.name ? name : `My Playlist`;
+  try {
+    const user = await User.findById(req.userId);
+    const post = await Post.findById(postId);
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const updatedPlaylists = [...user.playlists];
+    if (user.playlists.length > 0) {
+      const playlistIndex = user.playlists.findIndex(
+        (playlist) => playlist.name === name
+      );
+      const updatedPlaylist = updatedPlaylists[playlistIndex];
+      const isExist = updatedPlaylists[playlistIndex].songs.find(
+        (song) => song._id.toString() === postId.toString()
+      );
+      if (!isExist) {
+        updatedPlaylists[playlistIndex].songs.push(post);
+      }
+    } else {
+      updatedPlaylists.push({
+        name: name,
+        songs: [post],
+      });
+    }
+    user.playlists = updatedPlaylists;
+    await user.save();
+
+    res.status(200).json({ message: 'Success', playlists: user.playlists });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

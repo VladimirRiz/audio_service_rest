@@ -27,6 +27,8 @@ router.post(
 
 router.get('/post/:postId', feedController.getPost);
 
+router.get('/playlists/:userId', feedController.getPlaylists);
+
 router.put(
   '/post/:postId',
   [
@@ -43,6 +45,7 @@ router.put(
   isAuth,
   feedController.setComment
 );
+router.put('/playlists/:postId', isAuth, feedController.createPlaylist);
 
 router.delete('/post/:postId', isAuth, feedController.deletePost);
 
