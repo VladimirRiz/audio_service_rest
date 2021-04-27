@@ -50,6 +50,8 @@ router.put(
   isAuth,
   feedController.setComment
 );
+router.put('/playlist-name/:listId', isAuth, feedController.changeNamePlaylist);
+
 router.put('/playlists/:postId', isAuth, feedController.createPlaylist);
 
 router.delete('/post/:postId', isAuth, feedController.deletePost);

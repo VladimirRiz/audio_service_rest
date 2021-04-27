@@ -59,14 +59,12 @@ exports.login = async (req, res, next) => {
       { expiresIn: '1h' }
     );
     console.log(loadedUser, token);
-    res
-      .status(200)
-      .json({
-        token,
-        userId: loadedUser._id.toString(),
-        expiresIn: 3600,
-        status: loadedUser.status,
-      });
+    res.status(200).json({
+      token,
+      userId: loadedUser._id.toString(),
+      expiresIn: 3600,
+      status: loadedUser.status,
+    });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -93,18 +91,57 @@ exports.getUserStatus = async (req, res, next) => {
   }
 };
 
-exports.updateUserStatus = async (req, res, next) => {
-  const newStatus = req.body.status;
+exports.updateUser = async (req, res, next) => {
+  const { userId } = req.params;
+  const { name, email, status } = req.body;
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(userId);
     if (!user) {
       const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
-    user.status = newStatus;
+    user.status = status;
+    user.name = name;
+    user.email = email;
     await user.save();
     res.status(200).json({ message: 'User updated.' });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    const admin = await User.findById(req.userId);
+
+    if (admin.status === 'Admin') {
+      const users = await User.find();
+      res.status(200).json({ message: 'Success', users });
+    }
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.deleteUser = async (req, res, next) => {
+  const { userId } = req.params;
+  try {
+    // const user = await User.findById(userId);
+    // if (!user) {
+    //   const error = new Error('User not found');
+    //   error.statusCode = 404;
+    //   throw error;
+    // }
+    await User.findByIdAndRemove(userId);
+
+    res.status(200).json({ message: 'Deleted!' });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

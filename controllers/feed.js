@@ -257,16 +257,24 @@ exports.createPlaylist = async (req, res, next) => {
     }
 
     const updatedPlaylists = [...user.playlists];
+
     if (user.playlists.length > 0) {
       const playlistIndex = user.playlists.findIndex(
         (playlist) => playlist.name === name
       );
-      const updatedPlaylist = updatedPlaylists[playlistIndex];
-      const isExist = updatedPlaylist.songs.find(
-        (song) => song._id.toString() === postId.toString()
-      );
-      if (!isExist) {
-        updatedPlaylists[playlistIndex].songs.push(post);
+      if (playlistIndex >= 0) {
+        const updatedPlaylist = updatedPlaylists[playlistIndex];
+        const isExist = updatedPlaylist.songs.find(
+          (song) => song._id.toString() === postId.toString()
+        );
+        if (!isExist) {
+          updatedPlaylists[playlistIndex].songs.push(post);
+        }
+      } else {
+        updatedPlaylists.push({
+          name: name,
+          songs: [post],
+        });
       }
     } else {
       updatedPlaylists.push({
@@ -277,6 +285,33 @@ exports.createPlaylist = async (req, res, next) => {
     user.playlists = updatedPlaylists;
     await user.save();
     console.log(user.playlists);
+    res.status(200).json({ message: 'Success', playlists: user.playlists });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.changeNamePlaylist = async (req, res, next) => {
+  const { listId } = req.params;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  const { name } = req.body;
+  try {
+    const user = await User.findById(req.userId);
+    const updatedPlaylists = [...user.playlists];
+    const playlistIndex = user.playlists.findIndex(
+      (playlist) => playlist._id.toString() === listId.toString()
+    );
+    updatedPlaylists[playlistIndex].name = name;
+    user.playlists = updatedPlaylists;
+    await user.save();
     res.status(200).json({ message: 'Success', playlists: user.playlists });
   } catch (err) {
     if (!err.statusCode) {

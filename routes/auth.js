@@ -31,13 +31,18 @@ router.put(
 
 router.post('/login', authController.login);
 
-router.get('/status', isAuth, authController.getUserStatus);
+// router.get('/status', isAuth, authController.getUserStatus);
 
-router.patch(
-  '/status',
-  isAuth,
-  [body('status').trim().not().isEmpty()],
-  authController.updateUserStatus
-);
+router.get('/users', isAuth, authController.getUsers);
+
+router.put('/user/:userId', isAuth, authController.updateUser);
+
+router.delete('/user/:userId', isAuth, authController.deleteUser);
+// router.patch(
+//   '/status',
+//   isAuth,
+//   [body('status').trim().not().isEmpty()],
+//   authController.updateUserStatus
+// );
 
 module.exports = router;
