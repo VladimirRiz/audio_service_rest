@@ -107,7 +107,7 @@ exports.getPlaylists = async (req, res, next) => {
   const { userId } = req.params;
   try {
     const user = await User.findById(userId);
-    console.log(user);
+
     res.status(200).json({ message: 'Success', playlists: user.playlists });
   } catch (err) {
     if (!err.statusCode) {
@@ -116,7 +116,6 @@ exports.getPlaylists = async (req, res, next) => {
     next(err);
   }
 };
-
 exports.createPost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -263,7 +262,7 @@ exports.createPlaylist = async (req, res, next) => {
         (playlist) => playlist.name === name
       );
       const updatedPlaylist = updatedPlaylists[playlistIndex];
-      const isExist = updatedPlaylists[playlistIndex].songs.find(
+      const isExist = updatedPlaylist.songs.find(
         (song) => song._id.toString() === postId.toString()
       );
       if (!isExist) {
@@ -277,7 +276,46 @@ exports.createPlaylist = async (req, res, next) => {
     }
     user.playlists = updatedPlaylists;
     await user.save();
+    console.log(user.playlists);
+    res.status(200).json({ message: 'Success', playlists: user.playlists });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
 
+exports.removeFromPlayList = async (req, res, next) => {
+  const { postId } = req.params;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  let name = req.body.name ? name : `My Playlist`;
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    const updatedPlaylists = [...user.playlists];
+    let filtered;
+    if (user.playlists.length > 0) {
+      const playlistIndex = user.playlists.findIndex(
+        (playlist) => playlist.name === name
+      );
+
+      filtered = updatedPlaylists[playlistIndex].songs.filter(
+        (id) => id.toString() !== postId.toString()
+      );
+      updatedPlaylists[playlistIndex].songs = filtered;
+    }
+    user.playlists = updatedPlaylists;
+    await user.save();
     res.status(200).json({ message: 'Success', playlists: user.playlists });
   } catch (err) {
     if (!err.statusCode) {

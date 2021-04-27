@@ -14,6 +14,11 @@ router.get('/posts/:category', feedController.getCategory);
 router.get('/likes', feedController.getPopular);
 router.get('/plays', feedController.getPlays);
 router.get('/favorite/:userId', feedController.getFavorite);
+router.get(
+  '/playlist-remove/:postId',
+  isAuth,
+  feedController.removeFromPlayList
+);
 
 router.post(
   '/post',
