@@ -329,7 +329,7 @@ exports.removeFromPlayList = async (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
-  let name = req.body.name ? name : `My Playlist`;
+  const name = req.body.name;
   try {
     const user = await User.findById(req.userId);
     if (!user) {
@@ -343,13 +343,44 @@ exports.removeFromPlayList = async (req, res, next) => {
       const playlistIndex = user.playlists.findIndex(
         (playlist) => playlist.name === name
       );
-
+      console.log(updatedPlaylists[playlistIndex], name);
       filtered = updatedPlaylists[playlistIndex].songs.filter(
         (id) => id.toString() !== postId.toString()
       );
       updatedPlaylists[playlistIndex].songs = filtered;
     }
     user.playlists = updatedPlaylists;
+    await user.save();
+    res.status(200).json({ message: 'Success', playlists: user.playlists });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.removePlaylist = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  const name = req.body.name;
+  try {
+    console.log(name);
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    let filtered;
+    if (user.playlists.length > 0) {
+      filtered = user.playlists.filter((playlist) => playlist.name !== name);
+    }
+    user.playlists = filtered;
     await user.save();
     res.status(200).json({ message: 'Success', playlists: user.playlists });
   } catch (err) {
