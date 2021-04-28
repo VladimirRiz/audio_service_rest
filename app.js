@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 
 const feedRouts = require('./routes/feed');
 const authRouts = require('./routes/auth');
+const categoriesRouts = require('./routes/categories');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/feed', feedRouts);
+app.use('/categories', categoriesRouts);
 app.use('/auth', authRouts);
 
 app.use((error, req, res, next) => {

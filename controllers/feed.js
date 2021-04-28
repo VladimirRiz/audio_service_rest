@@ -116,6 +116,7 @@ exports.getPlaylists = async (req, res, next) => {
     next(err);
   }
 };
+
 exports.createPost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -129,7 +130,6 @@ exports.createPost = async (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
-  console.log(req.userId);
   const { title, description, category, likes, plays } = req.body;
   const audio = req.file.path;
   const post = new Post({
